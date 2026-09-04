@@ -1,0 +1,40 @@
+{
+  "name": "razorpay-linter",
+  "version": "1.0.0",
+  "description": "Static analyzer and AI remediation tool for Razorpay payment gateway integrations",
+  "main": "core/index.js",
+  "bin": {
+    "rzp-lint": "./cli/bin/rzp-lint.js"
+  },
+  "type": "module",
+  "scripts": {
+    "build:client": "npm run build --prefix client",
+    "build": "npm run build --prefix client",
+    "lint:sample": "node cli/bin/rzp-lint.js ./fixtures/vulnerable-app",
+    "lint:clean": "node cli/bin/rzp-lint.js ./fixtures/clean-app",
+    "server": "node server/index.js",
+    "test": "node --test test/**/*.test.js"
+  },
+  "keywords": [
+    "razorpay",
+    "linter",
+    "static-analysis",
+    "security",
+    "payments",
+    "ast"
+  ],
+  "author": "Utkarsh <utkarsh.baj3.14@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@babel/parser": "^7.26.9",
+    "@babel/traverse": "^7.26.9",
+    "@babel/types": "^7.26.9",
+    "@google/genai": "^2.21.0",
+    "boxen": "^7.1.1",
+    "chalk": "^5.4.1",
+    "commander": "^12.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}

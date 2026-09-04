@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Build outputs
+dist/
+client/dist/
+build/
+
+# Logs & temp
+*.log
+.gemini/
+.DS_Store
+Thumbs.db
