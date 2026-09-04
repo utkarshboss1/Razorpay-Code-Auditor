@@ -3,11 +3,14 @@
 > **Developer-First Static Analyzer & Automated Remediation Platform for Razorpay Payment Integrations.**  
 > Catches catastrophic payment bugs, revenue leakage, and security flaws before they hit production.
 
+[![Live Demo](https://img.shields.io/badge/Vercel-Live%20Demo-000000?style=flat&logo=vercel&logoColor=white)](https://razorpay-code-auditor.vercel.app)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Tests: 8/8 Passing](https://img.shields.io/badge/tests-8%2F8%20passing-emerald.svg)](./test)
 [![Latency: <1ms](https://img.shields.io/badge/AST%20Engine-%3C1ms%20deterministic-orange.svg)](#architecture)
 [![UI: 0 Anti-Patterns](https://img.shields.io/badge/Impeccable%20UI-0%20anti--patterns-purple.svg)](#web-studio)
+
+🔗 **Live Deployment:** [https://razorpay-code-auditor.vercel.app](https://razorpay-code-auditor.vercel.app)
 
 ---
 
