@@ -8,8 +8,8 @@
   },
   "type": "module",
   "scripts": {
-    "build:client": "npm run build --prefix client",
-    "build": "npm run build --prefix client",
+    "build:client": "npm --prefix client install && npm --prefix client run build",
+    "build": "npm --prefix client install && npm --prefix client run build",
     "lint:sample": "node cli/bin/rzp-lint.js ./fixtures/vulnerable-app",
     "lint:clean": "node cli/bin/rzp-lint.js ./fixtures/clean-app",
     "server": "node server/index.js",

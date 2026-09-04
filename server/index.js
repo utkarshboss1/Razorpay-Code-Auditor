@@ -183,6 +183,10 @@ app.get('*', (req, res) => {
   `);
 });
 
-app.listen(PORT, () => {
-  console.log(`Razorpay Linter API Server running at http://localhost:${PORT}`);
-});
+if (process.env.VERCEL !== '1') {
+  app.listen(PORT, () => {
+    console.log(`Razorpay Linter API Server running at http://localhost:${PORT}`);
+  });
+}
+
+export default app;
