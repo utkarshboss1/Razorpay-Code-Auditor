@@ -6,6 +6,7 @@ import { execFileSync } from 'child_process';
 import os from 'os';
 import fs from 'fs';
 import dotenv from 'dotenv';
+import AdmZip from 'adm-zip';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -71,26 +72,86 @@ app.post('/api/scan/repo', async (req, res) => {
       }
 
       tempDir = path.join(os.tmpdir(), `rzp-audit-${Date.now()}`);
+      let cloneSuccess = false;
+      let lastCloneError = null;
+
+      // Method 1: Try git clone --depth 1 if git binary is available
       try {
-        // Safe execution: execFileSync avoids shell interpolation and enforces 60s timeout + 10MB buffer limit
         execFileSync('git', ['clone', '--depth', '1', scanTarget, tempDir], {
-          timeout: 60_000,
+          timeout: 45_000,
           maxBuffer: 10 * 1024 * 1024,
           stdio: 'pipe'
         });
-        scanTarget = tempDir;
-        isCloned = true;
-      } catch (cloneErr) {
-        if (tempDir && fs.existsSync(tempDir)) {
-          try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (e) {}
-        }
-        const isTimeout = cloneErr.code === 'ETIMEDOUT' || cloneErr.signal === 'SIGTERM';
-        return res.status(400).json({ 
-          error: isTimeout 
-            ? 'Repository clone timed out after 60 seconds. The target repository may be too large.' 
-            : `Failed to clone repository: ${cloneErr.message}` 
-        });
+        cloneSuccess = true;
+      } catch (err) {
+        lastCloneError = err;
       }
+
+      // Method 2: If git binary is missing (e.g. Vercel Serverless / AWS Lambda where spawnSync git ENOENT occurs),
+      // or git clone fails, fallback to direct HTTPS zipball download & in-memory extraction
+      if (!cloneSuccess) {
+        try {
+          let zipBuffer = null;
+          const githubMatch = scanTarget.match(/^https:\/\/github\.com\/([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+?)(\.git|\/)?$/);
+
+          if (githubMatch) {
+            const [, owner, repo] = githubMatch;
+            // 1. Try codeload main branch first
+            let res = await fetch(`https://codeload.github.com/${owner}/${repo}/zip/refs/heads/main`, {
+              signal: AbortSignal.timeout(30_000)
+            });
+
+            // 2. If main not found, try master branch
+            if (res.status === 404) {
+              res = await fetch(`https://codeload.github.com/${owner}/${repo}/zip/refs/heads/master`, {
+                signal: AbortSignal.timeout(30_000)
+              });
+            }
+
+            // 3. If still not found, try GitHub zipball redirect
+            if (res.status === 404) {
+              res = await fetch(`https://api.github.com/repos/${owner}/${repo}/zipball`, {
+                headers: { 'User-Agent': 'Razorpay-Code-Auditor' },
+                redirect: 'follow',
+                signal: AbortSignal.timeout(30_000)
+              });
+            }
+
+            if (res.ok) {
+              zipBuffer = Buffer.from(await res.arrayBuffer());
+            } else {
+              throw new Error(`GitHub returned HTTP ${res.status} when downloading repository zip archive`);
+            }
+          }
+
+          if (zipBuffer) {
+            if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+            const zip = new AdmZip(zipBuffer);
+            zip.extractAllTo(tempDir, true);
+
+            // If the zip extracts into a single top-level directory, point to that folder
+            const extractedItems = fs.readdirSync(tempDir);
+            if (extractedItems.length === 1 && fs.statSync(path.join(tempDir, extractedItems[0])).isDirectory()) {
+              scanTarget = path.join(tempDir, extractedItems[0]);
+            } else {
+              scanTarget = tempDir;
+            }
+            cloneSuccess = true;
+          } else {
+            throw lastCloneError || new Error('Could not download repository archive.');
+          }
+        } catch (zipErr) {
+          if (tempDir && fs.existsSync(tempDir)) {
+            try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (e) {}
+          }
+          return res.status(400).json({ 
+            error: `Failed to download or inspect repository: ${zipErr.message || lastCloneError?.message}` 
+          });
+        }
+      } else {
+        scanTarget = tempDir;
+      }
+      isCloned = true;
     }
 
     if (!fs.existsSync(scanTarget)) {
