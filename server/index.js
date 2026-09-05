@@ -108,10 +108,14 @@ app.post('/api/scan/repo', async (req, res) => {
               });
             }
 
-            // 3. If still not found, try GitHub zipball redirect
+            // 3. If still not found, try GitHub zipball redirect with optional GITHUB_TOKEN
             if (res.status === 404) {
+              const headers = { 'User-Agent': 'Razorpay-Code-Auditor' };
+              if (process.env.GITHUB_TOKEN) {
+                headers['Authorization'] = `Bearer ${process.env.GITHUB_TOKEN}`;
+              }
               res = await fetch(`https://api.github.com/repos/${owner}/${repo}/zipball`, {
-                headers: { 'User-Agent': 'Razorpay-Code-Auditor' },
+                headers,
                 redirect: 'follow',
                 signal: AbortSignal.timeout(30_000)
               });
@@ -119,6 +123,8 @@ app.post('/api/scan/repo', async (req, res) => {
 
             if (res.ok) {
               zipBuffer = Buffer.from(await res.arrayBuffer());
+            } else if (res.status === 404) {
+              throw new Error(`Repository not found or is Private (HTTP 404). If this is your repository, please change its visibility to Public in GitHub Settings (or pass a local directory path).`);
             } else {
               throw new Error(`GitHub returned HTTP ${res.status} when downloading repository zip archive`);
             }
