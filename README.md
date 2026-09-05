@@ -8,7 +8,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Tests: 8/8 Passing](https://img.shields.io/badge/tests-8%2F8%20passing-emerald.svg)](./test)
 [![Latency: <1ms](https://img.shields.io/badge/AST%20Engine-%3C1ms%20deterministic-orange.svg)](#architecture)
-[![UI: 0 Anti-Patterns](https://img.shields.io/badge/Impeccable%20UI-0%20anti--patterns-purple.svg)](#web-studio)
+[![Engine: AST + AI](https://img.shields.io/badge/Engine-Babel%20AST%20%2B%20AI-purple.svg)](#architecture)
 
 🔗 **Live Deployment:** [https://razorpay-code-auditor.vercel.app](https://razorpay-code-auditor.vercel.app)
 
@@ -97,8 +97,8 @@ Integrating payment gateways looks deceptively simple, but hidden integration fl
 ### 1. Installation
 
 ```bash
-git clone https://github.com/your-org/razorpay-linter.git
-cd razorpay-linter
+git clone https://github.com/utkarshboss1/Razorpay-Code-Auditor.git
+cd Razorpay-Code-Auditor
 
 # Install backend & CLI dependencies
 npm install
@@ -152,7 +152,7 @@ node cli/bin/rzp-lint.js ./fixtures/vulnerable-app --json
    │                                                         │
    ╰─────────────────────────────────────────────────────────╯
 
-Target: D:\razorpay-linter\fixtures\vulnerable-app\checkout.js
+Target: ./fixtures/vulnerable-app/checkout.js
 Files scanned: 1
 Security & Compliance Score: 62/100
 
@@ -193,18 +193,14 @@ Start the unified server & web studio:
 npm run server
 ```
 
-Navigate to `http://localhost:4000`:
+Navigate to `http://localhost:4000` (or visit [https://razorpay-code-auditor.vercel.app](https://razorpay-code-auditor.vercel.app)):
 
-- **Editor Studio**: Interactive code editor with line numbers and real-time AST scoring (debounced 700ms).
-- **Pre-loaded Test Scenarios**: Instant 1-click loading for Paise Bugs, Webhook Signature Flaws, Live Key Leaks, and Clean Compliant integrations.
-- **Repository Auditor**: Direct sandboxed analysis of GitHub or GitLab repos with 60s timeout protection and depth-1 clones.
-- **Unified Diff Visualizer**: Copyable Git patches for instant remediation.
-- **UI/UX Pro Max Custom Themes**: 4 distinctive developer themes:
-  - 🦁 **Saffron Fintech (Default)**: Deep Obsidian & Indian Saffron Amber.
-  - ⚡ **Acid Cyber**: Pitch Black & Terminal Acid Lime.
-  - ❄️ **Nordic Frost**: Arctic Navy & Teal.
-  - ☕ **Warm Copper**: Espresso & Burnt Orange.
-- Audited with `impeccable detect` with **0 design anti-patterns**.
+- **Editor Studio**: Interactive code editor with line numbers, synchronized gutter, and real-time AST scoring.
+- **Pre-loaded Test Scenarios**: Instant 1-click loading for the "All 6 Flaws" master demo, Paise Multiplier Trap, Unverified Webhooks, Exposed Secrets, and Clean Compliant integrations.
+- **Dual Remediation Engines**: Switch seamlessly between instant deterministic AST templates (<1ms, offline) and context-aware AI patches (Gemini / Groq) that preserve custom variable names.
+- **Repository Auditor**: In-memory streaming archive extraction and analysis for remote GitHub and GitLab repositories without requiring local Git binaries.
+- **Unified Diff Visualizer**: Colorized unified git diffs with 1-click clipboard copying.
+- **Developer Color Palettes**: 4 high-contrast IDE color palettes (Saffron Fintech, Acid Cyber, Nordic Frost, Warm Copper).
 
 ---
 
@@ -235,14 +231,13 @@ TAP version 13
 
 ## 🛡️ Security & Sandbox Protections
 
-- **Safe Clone Execution**: Uses `execFileSync` instead of shell interpolation to prevent command injection.
+- **Safe Clone & In-Memory Fallback**: Uses `execFileSync` with depth-1 clones, and seamlessly falls back to in-memory HTTPS zipball stream extraction for serverless environments where `git` is absent.
 - **Repository Allowlist**: Enforces strict HTTPS URLs restricted to `github.com` and `gitlab.com`.
 - **Resource Constraints**: 60-second execution timeout and 10MB maximum buffer to prevent DoS attacks.
-- **Ephemeral Cleanup**: Temporary clone directories in `os.tmpdir()` are immediately destroyed after AST parsing.
+- **Ephemeral Cleanup**: Temporary clone and extraction directories in `os.tmpdir()` are immediately destroyed after AST parsing.
 
 ---
 
 ## 📄 License
 
 MIT License. Designed and engineered for Razorpay developers and payment security teams.
-
