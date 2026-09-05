@@ -89,10 +89,48 @@ app.post('/api/razorpay-webhook', express.raw({ type: 'application/json' }), (re
 
   const event = JSON.parse(req.body.toString());
   res.status(200).json({ status: 'success' });
+});`,
+  all6: `import Razorpay from 'razorpay';
+import express from 'express';
+
+const app = express();
+
+// 1. RZP-SEC-001: Hardcoded Live API Keys in source code
+const razorpay = new Razorpay({
+  key_id: 'rzp_live_98765432101234',
+  key_secret: 'SuperSecretLiveKey12345'
+});
+
+// Order Creation Endpoint
+app.post('/api/create-order', async (req, res) => {
+  const { cartTotal } = req.body; // e.g. ₹500
+
+  const order = await razorpay.orders.create({
+    // 2. RZP-FIN-003: Paise vs Rupees Trap (Charges ₹5.00 instead of ₹500!)
+    amount: cartTotal,
+    currency: 'INR',
+    // 3. RZP-REL-006: Unhandled Manual Capture (Auto-refunds in 5 days)
+    payment_capture: 0
+    // 4. RZP-REL-004: Missing 'receipt' (Duplicate charge on retry)
+    // 5. RZP-OPS-005: Missing 'notes' (No merchant accounting context)
+  });
+
+  res.json(order);
+});
+
+// 6. RZP-SEC-002: Missing Webhook Signature Verification
+app.post('/api/webhook', (req, res) => {
+  const event = req.body.event;
+  if (event === 'payment.captured') {
+    // Fulfilling orders without checking x-razorpay-signature!
+    fulfillOrder(req.body.payload.payment.entity.order_id);
+  }
+  res.status(200).send('OK');
 });`
 };
 
 export const PRESET_META = [
+  { id: 'all6', label: 'All 6 Flaws (Demo)', code: 'ALL-6-BUGS', severity: 'CRITICAL' },
   { id: 'checkout', label: 'Paise Multiplier Trap', code: 'RZP-FIN-003', severity: 'CRITICAL' },
   { id: 'webhook', label: 'Unverified Webhook', code: 'RZP-SEC-002', severity: 'CRITICAL' },
   { id: 'livekey', label: 'Exposed Live Secret', code: 'RZP-SEC-001', severity: 'CRITICAL' },
