@@ -686,12 +686,12 @@ export default function App() {
                               <span className="font-semibold">Deterministic Fallback Template</span>
                             </div>
                             <span className="text-[10px] text-amber-400/90 bg-amber-900/30 px-1.5 py-0.5 rounded border border-amber-500/30">
-                              Host Missing AI Key
+                              {remediation.aiError?.includes('quota') ? 'AI Quota Limit' : remediation.aiError?.includes('set') ? 'Missing API Key' : 'AI Temporarily Unavailable'}
                             </span>
                           </div>
                           {remediation.aiError && (
                             <div className="text-[10px] text-amber-400/80 pl-5">
-                              Note: {remediation.aiError} (Engine defaulted to offline template)
+                              Note: {remediation.aiError.length > 140 ? remediation.aiError.slice(0, 140) + '...' : remediation.aiError} (Defaulted to offline template)
                             </div>
                           )}
                         </div>

@@ -219,7 +219,7 @@ Respond ONLY with valid JSON.`;
         { role: 'user', content: prompt }
       ],
       response_format: { type: 'json_object' },
-      max_completion_tokens: 600,
+      max_completion_tokens: 2500,
       temperature: 0.2
     })
   });
@@ -227,7 +227,11 @@ Respond ONLY with valid JSON.`;
   if (!res.ok) {
     const errText = await res.text();
     console.error(`[Groq API ${res.status}]:`, errText);
-    throw new Error(`Groq HTTP error ${res.status}: ${errText}`);
+    let parsedErr;
+    try {
+      parsedErr = JSON.parse(errText)?.error?.message;
+    } catch (_) {}
+    throw new Error(parsedErr || `Groq HTTP error ${res.status}`);
   }
 
   const json = await res.json();
