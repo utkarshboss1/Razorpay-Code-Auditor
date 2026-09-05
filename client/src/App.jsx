@@ -20,7 +20,9 @@ import {
   Shield,
   Layers,
   ArrowUpRight,
-  Info
+  Info,
+  Zap,
+  AlertCircle
 } from 'lucide-react';
 import { PRESETS, PRESET_META, THEMES } from './presets';
 
@@ -346,7 +348,15 @@ export default function App() {
                 <input 
                   type="checkbox" 
                   checked={useAI} 
-                  onChange={(e) => setUseAI(e.target.checked)} 
+                  onChange={(e) => {
+                    const nextVal = e.target.checked;
+                    setUseAI(nextVal);
+                    if (activeTab === 'snippet' && code.trim()) {
+                      runScanSnippet(code, nextVal);
+                    } else if (activeTab === 'repo' && repoTarget.trim()) {
+                      runScanRepo(repoTarget, nextVal);
+                    }
+                  }} 
                   className="sr-only peer" 
                 />
                 <div className="w-7 h-3.5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-amber-500 relative"></div>
@@ -656,6 +666,46 @@ export default function App() {
                         <span className="text-slate-600 mr-2">{v.line} |</span>
                         {v.snippet}
                       </div>
+
+                      {/* Engine Differentiation Badge */}
+                      {remediation.source === 'gemini-3.6-flash' || remediation.source?.includes('groq') ? (
+                        <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-purple-950/60 to-indigo-950/40 border border-purple-500/30 text-[11px] font-mono">
+                          <div className="flex items-center gap-1.5 text-purple-300">
+                            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                            <span className="font-semibold">AI Context-Aware Patch ({remediation.source})</span>
+                          </div>
+                          <span className="text-[10px] text-purple-400/90 bg-purple-900/40 px-1.5 py-0.5 rounded border border-purple-500/20">
+                            Preserves User Variable Names
+                          </span>
+                        </div>
+                      ) : remediation.source === 'deterministic-fallback' ? (
+                        <div className="flex flex-col gap-1 p-2 rounded-lg bg-amber-950/40 border border-amber-500/40 text-[11px] font-mono">
+                          <div className="flex items-center justify-between text-amber-300">
+                            <div className="flex items-center gap-1.5">
+                              <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                              <span className="font-semibold">Deterministic Fallback Template</span>
+                            </div>
+                            <span className="text-[10px] text-amber-400/90 bg-amber-900/30 px-1.5 py-0.5 rounded border border-amber-500/30">
+                              Host Missing AI Key
+                            </span>
+                          </div>
+                          {remediation.aiError && (
+                            <div className="text-[10px] text-amber-400/80 pl-5">
+                              Note: {remediation.aiError} (Engine defaulted to offline template)
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-slate-800/60 border border-slate-700 text-[11px] font-mono">
+                          <div className="flex items-center gap-1.5 text-slate-300">
+                            <Zap className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                            <span className="font-semibold">Local Deterministic AST Template</span>
+                          </div>
+                          <span className="text-[10px] text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">
+                            &lt;1ms • 100% Offline
+                          </span>
+                        </div>
+                      )}
 
                       {/* Unified Git Patch */}
                       {remediation.patch && (

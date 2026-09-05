@@ -83,7 +83,8 @@ export async function scanDirectory(dirPath, options = {}) {
               results.push({
                 filePath: fullPath,
                 relativePath: path.relative(dirPath, fullPath),
-                violations: fileViolations
+                violations: fileViolations,
+                fileContent: content
               });
             }
           } catch (e) {

@@ -170,8 +170,9 @@ app.post('/api/scan/repo', async (req, res) => {
     if (result.results) {
       for (const item of result.results) {
         for (const v of item.violations) {
-          v.remediation = await remediateViolation(v, '', { useAI: Boolean(useAI) });
+          v.remediation = await remediateViolation(v, item.fileContent || '', { useAI: Boolean(useAI) });
         }
+        delete item.fileContent;
       }
     }
 
